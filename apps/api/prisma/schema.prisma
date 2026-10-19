@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("USER")
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+  bookings     Booking[]
+  reviews      Review[]
+  favorites    Favorite[]
+  trips        Trip[]
+}
+
+model Region {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        Json
+  description Json
+  cover       String
+  sites       HeritageSite[]
+}
+
+model HeritageSite {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  regionId    String
+  region      Region       @relation(fields: [regionId], references: [id])
+  title       Json
+  summary     Json
+  history     Json
+  era         String
+  category    String
+  latitude    Float
+  longitude   Float
+  image       String
+  gallery     Json?
+  sourceTitle String?
+  sourceUrl   String?
+  accessNotes Json?
+  status      String       @default("PUBLISHED")
+  experiences Experience[]
+  favorites   Favorite[]
+}
+
+model Experience {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  siteId      String?
+  site        HeritageSite? @relation(fields: [siteId], references: [id])
+  title       Json
+  description Json
+  price       Int
+  duration    String
+  image       String
+  capacity    Int          @default(12)
+  active      Boolean      @default(true)
+  schedules   Schedule[]
+  bookings    Booking[]
+}
+
+model Schedule {
+  id           String     @id @default(cuid())
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id])
+  startsAt     DateTime
+  capacity     Int
+  bookings     Booking[]
+}
+
+model Booking {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id])
+  scheduleId   String
+  schedule     Schedule   @relation(fields: [scheduleId], references: [id])
+  guests       Int
+  total        Int
+  status       String     @default("CONFIRMED")
+  orderId      String?
+  createdAt    DateTime   @default(now())
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        Json
+  description Json
+  category    String
+  price       Int
+  stock       Int
+  image       String
+  active      Boolean @default(true)
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  items          Json
+  total          Int
+  status         String   @default("NEW")
+  paymentStatus  String   @default("DEMO")
+  contactChannel String?
+  createdAt      DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  targetType String
+  targetId   String
+  rating     Int
+  comment    String
+  status     String   @default("PUBLISHED")
+  createdAt  DateTime @default(now())
+}
+
+model Favorite {
+  id     String       @id @default(cuid())
+  userId String
+  user   User         @relation(fields: [userId], references: [id])
+  siteId String
+  site   HeritageSite @relation(fields: [siteId], references: [id])
+
+  @@unique([userId, siteId])
+}
+
+model Trip {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  siteIds   Json
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value Json
+}

@@ -1,0 +1,16 @@
+{
+  "name": "konok-kg",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @konok/web",
+    "dev:api": "npm run dev -w @konok/api",
+    "build": "npm run build -w @konok/web",
+    "db:generate": "npm run db:generate -w @konok/api",
+    "db:push": "npm run db:push -w @konok/api",
+    "db:seed": "npm run db:seed -w @konok/api",
+    "check": "npm run check -w @konok/api"
+  }
+}
